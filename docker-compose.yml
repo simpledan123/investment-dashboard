@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: investment-db
+    environment:
+      POSTGRES_DB: investment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - investment-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: investment-api
+    ports:
+      - "8000:8000"
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: investment_db
+      EXCHANGE_RATE_API_URL: https://api.exchangerate-api.com/v4/latest/USD
+      PRICE_ALERT_THRESHOLD: 5.0
+      ALERT_CHECK_INTERVAL: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - investment-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: investment-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - investment-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  investment-network:
+    driver: bridge 
