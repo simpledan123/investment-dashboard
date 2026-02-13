@@ -255,14 +255,14 @@ docker-compose logs postgres
 - 재시도 로직 구현됨
 - 대안: Alpha Vantage API
 
-=== 업데이트 ===  
-# Portfolio Summary 성능 최적화 (N+1 제거)
 
-## 문제
+## DB 성능 최적화 (N+1 제거)
+
+### 문제
 기존 구현은 holdings를 조회한 뒤, 각 holding마다 transactions를 조회하여
 holding 개수(N)에 비례해 DB 쿼리 수가 증가하는 N+1 문제가 있었습니다.
 
-## 개선
+### 개선
 transactions 테이블을 ticker 기준으로 GROUP BY하여 아래를 한 번에 집계합니다.
 
 - net_shares = SUM(BUY shares) - SUM(SELL shares)
