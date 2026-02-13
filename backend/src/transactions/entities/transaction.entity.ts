@@ -5,9 +5,12 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Holding } from '../../holdings/entities/holding.entity';
 
+@Index('idx_transactions_ticker', ['ticker'])
+@Index('idx_transactions_ticker_time', ['ticker', 'transactionTime'])
 @Entity('transactions')
 export class Transaction {
   @PrimaryGeneratedColumn()
@@ -34,9 +37,7 @@ export class Transaction {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @ManyToOne(() => Holding, (holding) => holding.transactions, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => Holding, (holding) => holding.transactions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ticker', referencedColumnName: 'ticker' })
   holding: Holding;
 }
